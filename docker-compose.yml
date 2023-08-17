@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  tls-check:
+    image: golang:1.19
+    ports:
+      - 5555:5555
+    volumes:
+      - ./tls-check:/tls-check
+    command: sh -c "cd /tls-check && nohup sh ./build.sh"
+
+  # default-server:
+  #   image: golang:1.19
+  #   ports:
+  #     - 4000:4000
+  #   volumes:
+  #     - ./default-server:/default-server
+  #   command: sh -c "cd /default-server && nohup sh ./build.sh"
+
+  caddy:
+    image: caddy/caddy:2.6.2-alpine
+    # container_name: caddy
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - es_network
+    volumes:
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/site:/srv
+      - $PWD/caddy_data:/data
+      - $PWD/caddy_config:/config
+volumes:
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+
+networks:
+  es_network:
+    driver: bridge
